@@ -7,7 +7,7 @@ export async function generateMetadata({ searchParams }) {
   const { q } = await searchParams;
   return {
     title: `Cari: ${q || ''} - ${process.env.NEXT_PUBLIC_SITE_NAME}`,
-    description: `Hasil pencarian anime untuk kata kunci ${q}`,
+    description: `Hasil pencarian hentai untuk kata kunci ${q}`,
     robots: 'noindex, follow',
   };
 }

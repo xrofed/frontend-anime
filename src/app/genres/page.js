@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { Tag } from 'lucide-react';
 
 export const metadata = {
-  title: `Daftar Genre Anime - ${process.env.NEXT_PUBLIC_SITE_NAME}`,
-  description: 'Temukan anime berdasarkan genre favoritmu.',
+  title: `Daftar Genre Hentai - ${process.env.NEXT_PUBLIC_SITE_NAME}`,
+  description: 'Temukan hentai berdasarkan genre favoritmu hanya di Duniahentai.',
 };
 
 export default async function GenresPage() {

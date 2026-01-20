@@ -5,8 +5,8 @@ import Link from 'next/link'; // Opsional: jika ingin tombol 'Lihat Semua'
 import { ChevronRight } from 'lucide-react'; // Opsional: icon
 
 export const metadata = {
-  title: `${process.env.NEXT_PUBLIC_SITE_NAME} - Nonton dan Download Anime Hentai Sub Indo 18+ Terbaru`,
-  description: 'Streaming anime subtitle Indonesia terbaru dan terlengkap.',
+  title: `${process.env.NEXT_PUBLIC_SITE_NAME} - Nonton dan Download Hentai Sub Indo`,
+  description: 'Duniahentai - Nonton dan download AV anime hentai sub indo terbaru dengan kualitas HD. Koleksi lengkap dari Nekopoi, MiniOppai, RajaHentai, dan update setiap hari!',
 };
 
 export default async function Home({ searchParams }) {
@@ -64,7 +64,7 @@ export default async function Home({ searchParams }) {
       {/* --- SECTION 2: ANIME BARU DITAMBAHKAN --- */}
       <section>
         <div className="flex justify-between items-center mb-6 border-l-4 border-blue-500 pl-4">
-          <h2 className="text-2xl font-bold text-white">Anime Baru Ditambahkan</h2>
+          <h2 className="text-2xl font-bold text-white">Hentai Baru Ditambahkan</h2>
           <Link href="/anime" className="text-sm text-blue-500 hover:text-blue-400 font-medium flex items-center gap-1">
             Lihat Directory <ChevronRight size={16} />
           </Link>

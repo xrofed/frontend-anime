@@ -9,8 +9,8 @@ export async function generateMetadata({ params }) {
   const genreName = slug.replace(/-/g, ' ').toUpperCase();
   
   return {
-    title: `Anime Genre ${genreName} - ${process.env.NEXT_PUBLIC_SITE_NAME}`,
-    description: `Nonton anime dengan genre ${genreName} sub indo gratis.`,
+    title: `Hentai Genre ${genreName} - ${process.env.NEXT_PUBLIC_SITE_NAME}`,
+    description: `Nonton hentai dengan genre ${genreName} sub indo gratis hanya di Duniahentai.`,
   };
 }
 

@@ -14,7 +14,7 @@ export async function generateMetadata({ params }) {
   const { episode, parentAnime } = res.data;
   return {
     title: `Nonton ${episode.title} Sub Indo - ${process.env.NEXT_PUBLIC_SITE_NAME}`,
-    description: `Streaming dan Download ${episode.title} dari anime ${parentAnime?.title}.`,
+    description: `Streaming dan Download ${episode.title} dari hentai ${parentAnime?.title} hanya di Duniahentai.`,
   };
 }
 
