@@ -3,8 +3,8 @@ import AnimeCard from '@/components/AnimeCard';
 import { Flame } from 'lucide-react';
 
 export const metadata = {
-  title: `Anime Trending Top 20 - ${process.env.NEXT_PUBLIC_SITE_NAME}`,
-  description: 'Daftar anime hentai paling populer dan banyak ditonton saat ini.',
+  title: `Hentai Sub Indo Trending Top 20 - ${process.env.NEXT_PUBLIC_SITE_NAME}`,
+  description: 'Daftar anime hentai sub indo paling populer dan banyak ditonton saat ini.',
 };
 
 export default async function TrendingPage() {
