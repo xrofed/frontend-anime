@@ -66,7 +66,7 @@ export default async function Home({ searchParams }) {
         <div className="flex justify-between items-center mb-6 border-l-4 border-blue-500 pl-4">
           <h2 className="text-2xl font-bold text-white">Hentai Baru Ditambahkan</h2>
           <Link href="/anime" className="text-sm text-blue-500 hover:text-blue-400 font-medium flex items-center gap-1">
-            Lihat Directory <ChevronRight size={16} />
+            Lihat Semua <ChevronRight size={16} />
           </Link>
         </div>
 

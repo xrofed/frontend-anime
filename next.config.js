@@ -86,8 +86,19 @@ const nextConfig = {
       // Logic: /nonton/judul-episode-1 -> /watch/judul-episode-1
       // Kita asumsikan strukturnya cocok langsung ke /watch
       {
+        source: '/:slug',
+        destination: '/watch/:slug',
+        permanent: true,
+      },
+      {
         source: '/nonton/:slug',
         destination: '/watch/:slug',
+        permanent: true,
+      },
+
+      {
+        source: '/genre-list',
+        destination: '/genres',
         permanent: true,
       },
 
