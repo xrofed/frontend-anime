@@ -23,7 +23,7 @@ export default function Navbar() {
         <Link href="/" onClick={closeMenu} className="flex items-center">
           {/* 2. Ganti Text dengan Image */}
           <Image 
-            src="/logo.png" // Pastikan file logo.png ada di folder 'public'
+            src={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://duniahentai.top'}/logo.png`} // Pastikan file logo.png ada di folder 'public'
             alt={process.env.NEXT_PUBLIC_SITE_NAME || 'Logo Website'}
             width={150} // Tentukan lebar aspek rasio (bukan ukuran layar)
             height={40} // Tentukan tinggi aspek rasio

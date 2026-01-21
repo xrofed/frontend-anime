@@ -78,8 +78,7 @@ const nextConfig = {
         permanent: true,
       },
 
-      // --- PERBAIKAN: Redirect Legacy Nonton ---
-      // Rule lama '/nonton/:slug' tetap aman
+      // --- Redirect Nonton Legacy ---
       {
         source: '/nonton/:slug',
         destination: '/watch/:slug',
@@ -87,9 +86,9 @@ const nextConfig = {
       },
 
       // --- PERBAIKAN UTAMA DI SINI ---
-      // Jangan pakai '/:slug' saja. Gunakan Regex untuk memastikan
-      // URL tersebut mengandung kata "-episode-" sebelum melempar ke /watch.
-      // Ini akan menyelamatkan /logo.png, /episodes, /genres agar tidak kena redirect.
+      // Kita pakai Regex: (.*-episode-.*)
+      // Artinya: Hanya redirect jika URL mengandung teks "-episode-"
+      // Ini akan menyelamatkan /logo.png, /episodes, dll dari redirect nyasar.
       {
         source: '/:slug(.*-episode-.*)', 
         destination: '/watch/:slug',
