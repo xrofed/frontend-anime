@@ -1,247 +1,237 @@
 "use client";
 import { useEffect, useState, useRef } from 'react';
-import { Play, Loader2 } from 'lucide-react';
+import { Play, Loader2, AlertCircle, Signal, Settings, Info } from 'lucide-react';
 import videojs from 'video.js';
-import 'video.js/dist/video-js.css'; // Wajib import CSS Video.js
+import Script from 'next/script'; // [BARU] Import Script dari Next.js
+import 'video.js/dist/video-js.css';
 
 export default function VideoPlayer({ streams }) {
   const [activeStreamIndex, setActiveStreamIndex] = useState(0);
-  
-  // State untuk menyimpan status Player
+
+  // State Status Player
   const [playerState, setPlayerState] = useState({
     url: null,
-    type: 'embed', // 'embed' | 'hls'
-    isLoading: false
+    type: 'embed',
+    isLoading: true,
+    statusMessage: 'Menginisialisasi...',
+    error: null,
+    isPlaying: false,
+    isBuffering: false
   });
 
-  // Refs untuk Video.js
-  const videoNodeRef = useRef(null); // Ref untuk elemen DIV pembungkus
-  const playerRef = useRef(null);    // Ref untuk instance Video.js
+  const [showInfo, setShowInfo] = useState(false);
+  const videoNodeRef = useRef(null);
+  const playerRef = useRef(null);
 
-  // --- 1. LOGIKA PROSES STREAM (DECODE, SCRAPE & PROXY) ---
+  // --- 1. PROSES STREAM (Sama seperti sebelumnya) ---
   useEffect(() => {
     let isMounted = true;
-
-    // Reset state saat ganti stream
-    setPlayerState(prev => ({ ...prev, url: null, isLoading: true }));
+    setPlayerState(prev => ({
+      ...prev,
+      url: null,
+      isLoading: true,
+      error: null,
+      statusMessage: 'Menghubungkan ke server...',
+      isBuffering: false
+    }));
 
     const processStream = async () => {
-      if (!streams || streams.length === 0) return;
+      if (!streams || streams.length === 0) {
+        if (isMounted) setPlayerState(p => ({ ...p, isLoading: false, error: 'Tidak ada stream tersedia.' }));
+        return;
+      }
 
       const currentStream = streams[activeStreamIndex];
       if (!currentStream?.url) return;
 
       try {
-        // 1. Decode Base64 dari API
         const decodedUrl = atob(currentStream.url);
-        
-        // Tentukan URL API Backend (Port 3000)
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-        // A. Cek apakah ini target Scraper (Embed Saitou/Lainnya)
+        if (isMounted) setPlayerState(p => ({ ...p, statusMessage: 'Menganalisis tipe stream...' }));
+
         if (decodedUrl.includes('saitou.my.id') || decodedUrl.includes('embed')) {
-          console.log("Mendeteksi Embed, mencoba extract via Backend...");
-          
-          // Panggil endpoint /extract
+          if (isMounted) setPlayerState(p => ({ ...p, statusMessage: 'Mengekstrak video dari sumber...' }));
+
           const res = await fetch(`${apiUrl}/extract?url=${encodeURIComponent(decodedUrl)}`);
           const result = await res.json();
 
-          if (isMounted) {
-            if (result.success && result.data?.url) {
-              // SUKSES SCRAPE -> BUNGKUS DENGAN PROXY
-              const originalM3u8 = result.data.url;
-              
-              // Kita bungkus URL m3u8 dengan Proxy Backend kita agar tidak kena CORS
-              const proxyUrl = `${apiUrl}/proxy?url=${encodeURIComponent(originalM3u8)}`;
+          if (!isMounted) return;
 
-              console.log("Menggunakan Proxy URL:", proxyUrl);
-
-              setPlayerState({ 
-                url: proxyUrl, 
-                type: 'hls', 
-                isLoading: false 
-              });
-            } else {
-              // GAGAL SCRAPE -> Fallback ke Iframe Embed biasa
-              console.warn("Gagal scrape, fallback ke embed");
-              setPlayerState({ 
-                url: decodedUrl, 
-                type: 'embed', 
-                isLoading: false 
-              });
-            }
-          }
-        } 
-        // B. Bukan target scraper (Direct Link / M3U8 langsung)
-        else {
-          const isM3u8 = decodedUrl.includes('.m3u8');
-          
-          if (isM3u8) {
-             // Jika m3u8 langsung, juga sebaiknya lewat proxy untuk jaga-jaga CORS
-             const proxyUrl = `${apiUrl}/proxy?url=${encodeURIComponent(decodedUrl)}`;
-             if (isMounted) {
-                setPlayerState({ 
-                  url: proxyUrl, 
-                  type: 'hls', 
-                  isLoading: false 
-                });
-             }
+          if (result.success && result.data?.url) {
+            const proxyUrl = `${apiUrl}/proxy?url=${encodeURIComponent(result.data.url)}`;
+            setPlayerState({
+              url: proxyUrl, type: 'hls', isLoading: false, statusMessage: 'Siap diputar (HLS Proxy)',
+              error: null, isPlaying: false, isBuffering: false
+            });
           } else {
-             // Jika mp4 biasa atau iframe lain
-             if (isMounted) {
-                setPlayerState({ 
-                  url: decodedUrl, 
-                  type: 'embed', 
-                  isLoading: false 
-                });
-             }
+            setPlayerState({
+              url: decodedUrl, type: 'embed', isLoading: false, statusMessage: 'Mode Embed (Direct)',
+              error: null, isPlaying: false, isBuffering: false
+            });
+          }
+        } else {
+          const isM3u8 = decodedUrl.includes('.m3u8');
+          const proxyUrl = isM3u8 ? `${apiUrl}/proxy?url=${encodeURIComponent(decodedUrl)}` : decodedUrl;
+          const type = isM3u8 ? 'hls' : 'embed';
+
+          if (isMounted) {
+            setPlayerState({
+              url: proxyUrl, type, isLoading: false,
+              statusMessage: isM3u8 ? 'Siap diputar (Direct HLS)' : 'Siap diputar (Embed)',
+              error: null, isPlaying: false, isBuffering: false
+            });
           }
         }
-
       } catch (e) {
-        console.error("Error processing stream:", e);
-        if (isMounted) setPlayerState(prev => ({ ...prev, isLoading: false }));
+        if (isMounted) {
+          setPlayerState(prev => ({ ...prev, isLoading: false, error: 'Gagal memproses video.' }));
+        }
       }
     };
-
     processStream();
-
     return () => { isMounted = false; };
   }, [streams, activeStreamIndex]);
 
-
-  // --- 2. LOGIKA VIDEO.JS PLAYER (HLS) ---
+  // --- 2. VIDEO.JS SETUP (Sama seperti sebelumnya) ---
   useEffect(() => {
-    // Hanya jalankan jika tipe adalah 'hls' dan URL tersedia
     if (playerState.type === 'hls' && playerState.url && videoNodeRef.current) {
-      
-      // Jika player belum ada, inisialisasi
       if (!playerRef.current) {
         const videoElement = document.createElement("video-js");
-        videoElement.classList.add('vjs-big-play-centered'); // Tombol play di tengah
-        videoElement.classList.add('vjs-16-9'); // Rasio 16:9
+        videoElement.classList.add('vjs-big-play-centered', 'custom-video-theme');
         videoNodeRef.current.appendChild(videoElement);
 
         const player = videojs(videoElement, {
-          autoplay: false,
-          controls: true,
-          responsive: true,
-          fluid: true,
-          html5: {
-            vhs: {
-              overrideNative: true // Paksa gunakan Video.js engine, bukan native Safari
-            },
-            nativeAudioTracks: false,
-            nativeVideoTracks: false
-          },
-          sources: [{
-            src: playerState.url,
-            type: 'application/x-mpegURL' // Tipe MIME untuk HLS
-          }]
-        }, () => {
-          console.log('Video.js Player Ready');
+          autoplay: false, controls: true, responsive: true, fluid: true,
+          playbackRates: [0.5, 1, 1.5, 2],
+          userActions: { hotkeys: true },
+          html5: { vhs: { overrideNative: true } },
+          sources: [{ src: playerState.url, type: 'application/x-mpegURL' }]
         });
+
+        player.on('waiting', () => setPlayerState(p => ({ ...p, isBuffering: true, statusMessage: 'Buffering...' })));
+        player.on('playing', () => setPlayerState(p => ({ ...p, isBuffering: false, isPlaying: true, statusMessage: 'Sedang Memutar' })));
+        player.on('pause', () => setPlayerState(p => ({ ...p, isPlaying: false, statusMessage: 'Jeda' })));
+        player.on('error', () => setPlayerState(p => ({ ...p, error: 'Terjadi kesalahan player.', isLoading: false })));
 
         playerRef.current = player;
       } else {
-        // Jika player sudah ada, update source-nya saja
         const player = playerRef.current;
         player.src({ src: playerState.url, type: 'application/x-mpegURL' });
+        player.load();
       }
     } else {
-      // Jika tipe berubah jadi 'embed', hancurkan player Video.js jika ada
       if (playerRef.current) {
         playerRef.current.dispose();
         playerRef.current = null;
-        // Bersihkan DOM anak di ref container
-        if(videoNodeRef.current) videoNodeRef.current.innerHTML = "";
+        if (videoNodeRef.current) videoNodeRef.current.innerHTML = "";
       }
     }
   }, [playerState.url, playerState.type]);
 
-
-  // --- 3. CLEANUP SAAT UNMOUNT ---
+  // Cleanup
   useEffect(() => {
     const player = playerRef.current;
     return () => {
-      if (player && !player.isDisposed()) {
-        player.dispose();
-        playerRef.current = null;
-      }
+      if (player && !player.isDisposed()) player.dispose();
     };
   }, []);
 
+  const currentServerName = streams?.[activeStreamIndex]?.name || `Server ${activeStreamIndex + 1}`;
+  const customCss = `
+    .custom-video-theme .vjs-big-play-button { background-color: rgba(220, 38, 38, 0.8) !important; border: none !important; border-radius: 50% !important; width: 2em !important; height: 2em !important; line-height: 2em !important; font-size: 3em !important; }
+    .custom-video-theme .vjs-control-bar { background-color: rgba(0, 0, 0, 0.7) !important; }
+    .custom-video-theme .vjs-play-progress { background-color: #dc2626 !important; }
+  `;
 
-  if (!streams || streams.length === 0) {
-    return (
-      <div className="aspect-video bg-black flex items-center justify-center text-slate-500 rounded-lg">
-        Video tidak tersedia
-      </div>
-    );
-  }
+  if (!streams || streams.length === 0) return <div className="text-slate-500">Video tidak tersedia</div>;
 
   return (
     <div className="flex flex-col gap-4">
-      {/* AREA PLAYER UTAMA */}
-      <div className="aspect-video bg-black rounded-lg overflow-hidden relative shadow-lg ring-1 ring-slate-800 group z-10">
-        
-        {playerState.isLoading ? (
-          /* LOADING SCREEN */
-          <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 bg-slate-900/50">
-            <Loader2 className="animate-spin mb-2 text-red-500" size={32} />
-            <span className="text-sm font-medium animate-pulse">Menyiapkan Video...</span>
+      <style>{customCss}</style>
+
+      {/* --- HEADER --- */}
+      <div className="flex justify-between items-center bg-slate-800 px-4 py-2 rounded-t-lg border-b border-slate-700">
+        <div className="flex items-center gap-2 text-sm font-medium text-slate-300">
+          <Signal size={16} className={playerState.error ? "text-red-500" : "text-green-500"} />
+          <span>{currentServerName}</span>
+          <span className="text-xs px-2 py-0.5 rounded bg-slate-700 text-slate-400 uppercase">
+            {playerState.type === 'hls' ? 'HLS Player' : 'Embed Frame'}
+          </span>
+        </div>
+        <button onClick={() => setShowInfo(!showInfo)} className={`p-1.5 rounded hover:bg-slate-700 transition ${showInfo ? 'text-red-400 bg-slate-700' : 'text-slate-400'}`}>
+          <Info size={18} />
+        </button>
+      </div>
+
+      {/* --- MAIN PLAYER --- */}
+      <div className="aspect-video bg-black relative shadow-2xl group overflow-hidden">
+        {playerState.isLoading && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/90 text-white">
+            <Loader2 className="animate-spin mb-3 text-red-500" size={40} />
+            <p className="text-sm font-medium animate-pulse text-slate-300">{playerState.statusMessage}</p>
           </div>
-        ) : playerState.url ? (
-          /* PLAYER SUDAH SIAP */
+        )}
+
+        {!playerState.isLoading && playerState.error && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/95 text-white px-6 text-center">
+            <AlertCircle className="text-red-500 mb-3" size={48} />
+            <h3 className="text-lg font-bold mb-1">Gagal Memutar Video</h3>
+            <p className="text-slate-400 text-sm mb-4">{playerState.error}</p>
+            <div className="flex gap-3">
+              <button onClick={() => window.location.reload()} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded text-sm font-medium">Refresh</button>
+              <button onClick={() => setActiveStreamIndex((prev) => (prev + 1) % streams.length)} className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-sm font-medium">Ganti Server</button>
+            </div>
+          </div>
+        )}
+
+        {showInfo && (
+          <div className="absolute top-2 left-2 z-30 bg-black/80 backdrop-blur-sm p-3 rounded text-xs text-green-400 font-mono border border-green-500/30 max-w-[200px]">
+            <p>Status: {playerState.statusMessage}</p>
+            <p>Url: {playerState.url ? 'Hidden (Proxy)' : '-'}</p>
+          </div>
+        )}
+
+        {!playerState.isLoading && !playerState.error && playerState.url && (
           playerState.type === 'hls' ? (
-            
-            // --- VIDEO.JS CONTAINER ---
-            // 'data-vjs-player' menjaga agar React tidak merusak DOM Video.js
             <div data-vjs-player ref={videoNodeRef} className="w-full h-full" />
-            
           ) : (
-            
-            // --- IFRAME EMBED (Fallback / Non-HLS) ---
-            <iframe 
-              src={playerState.url} 
-              className="w-full h-full" 
-              allowFullScreen 
-              scrolling="no"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            ></iframe>
-            
+            <iframe src={playerState.url} className="w-full h-full" allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
           )
-        ) : (
-          /* STATE KOSONG */
-          <div className="w-full h-full flex items-center justify-center text-slate-500">
-            Memuat...
-          </div>
         )}
       </div>
 
-      {/* TOMBOL PILIH SERVER */}
-      <div className="bg-slate-800 p-4 rounded-lg">
-        <h3 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
-          <Play size={16} /> PILIH SERVER STREAMING
+      {/* --- SERVER SELECTOR --- */}
+      <div className="bg-slate-800 p-4 rounded-b-lg border-t border-slate-700">
+        <h3 className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
+          <Settings size={14} /> Pilih Server Streaming
         </h3>
         <div className="flex flex-wrap gap-2">
-          {streams.map((stream, idx) => (
-            <button
-              key={stream._id || idx}
-              onClick={() => setActiveStreamIndex(idx)}
-              disabled={playerState.isLoading && activeStreamIndex === idx}
-              className={`px-4 py-2 rounded text-sm font-medium transition-all ${
-                activeStreamIndex === idx
-                  ? 'bg-red-600 text-white shadow-lg scale-105'
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-              }`}
-            >
-              {stream.name || `Server ${idx + 1}`}
-            </button>
-          ))}
+          {streams.map((stream, idx) => {
+            const isActive = activeStreamIndex === idx;
+            return (
+              <button
+                key={idx}
+                onClick={() => !playerState.isLoading && setActiveStreamIndex(idx)}
+                disabled={playerState.isLoading && isActive}
+                className={`relative px-4 py-2.5 rounded-lg text-sm font-semibold transition-all border ${isActive ? 'bg-red-600/10 border-red-500 text-red-500' : 'bg-slate-700/50 border-transparent text-slate-400 hover:bg-slate-700'
+                  }`}
+              >
+                {isActive && <span className="absolute top-1 right-1 flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span></span>}
+                {stream.name || `Server ${idx + 1}`}
+              </button>
+            );
+          })}
         </div>
       </div>
+
+      {/* --- [BARU] SCRIPT IKLAN --- */}
+      {/* Menggunakan next/script agar loading optimal dan tidak blocking */}
+      <Script
+        src="https://js.wpadmngr.com/static/adManager.js"
+        data-admpid="314095"
+        strategy="lazyOnload" // Load setelah halaman interaktif agar video player prioritas utama
+      />
     </div>
   );
 }

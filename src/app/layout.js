@@ -1,5 +1,6 @@
 import './globals.css'
 import Navbar from '@/components/Navbar'
+import AdScript from "@/components/AdScript";
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL),
@@ -9,6 +10,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="id">
       <body className="bg-slate-950 text-slate-200 min-h-screen flex flex-col font-sans">
+        <AdScript />
         <Navbar />
         <main className="flex-grow">
           {children}
