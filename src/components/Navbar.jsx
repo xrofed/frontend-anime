@@ -35,9 +35,10 @@ export default function Navbar() {
         {/* MENU DESKTOP */}
         <div className="hidden md:flex items-center gap-6 text-sm font-medium">
           <Link href="/" className="hover:text-red-400 transition">Home</Link>
-          <Link href="/anime" className="hover:text-red-400 transition">Daftar Anime</Link>
+          <Link href="/anime" className="hover:text-red-400 transition">Daftar Hentai</Link>
           <Link href="/episodes" className="hover:text-red-400 transition">Episode Baru</Link>
           <Link href="/genres" className="hover:text-red-400 transition">Genre</Link>
+          <Link href="/trending" className="hover:text-red-400 transition">Trending</Link>
         </div>
 
         {/* SEARCH BAR & MOBILE BUTTON */}
@@ -82,9 +83,10 @@ export default function Navbar() {
 
           <div className="flex flex-col gap-2 font-medium text-slate-300">
             <Link href="/" onClick={closeMenu} className="px-4 py-3 hover:bg-slate-800 rounded-lg transition hover:text-red-500">Home</Link>
-            <Link href="/anime" onClick={closeMenu} className="px-4 py-3 hover:bg-slate-800 rounded-lg transition hover:text-red-500">Daftar Anime</Link>
+            <Link href="/anime" onClick={closeMenu} className="px-4 py-3 hover:bg-slate-800 rounded-lg transition hover:text-red-500">Daftar Hentai</Link>
             <Link href="/episodes" onClick={closeMenu} className="px-4 py-3 hover:bg-slate-800 rounded-lg transition hover:text-red-500">Episode Baru</Link>
             <Link href="/genres" onClick={closeMenu} className="px-4 py-3 hover:bg-slate-800 rounded-lg transition hover:text-red-500">Genre</Link>
+            <Link href="/trending" onClick={closeMenu} className="px-4 py-3 hover:bg-slate-800 rounded-lg transition hover:text-red-500">Trending</Link>
           </div>
         </div>
       )}

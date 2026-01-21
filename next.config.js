@@ -70,7 +70,7 @@ const nextConfig = {
       // tapi saya arahkan ke root atau search filter jika ada.
       {
         source: '/trending/page/:page',
-        destination: '/', // Atau ke halaman trending jika sudah dibuat
+        destination: '/trending', // Atau ke halaman trending jika sudah dibuat
         permanent: true,
       },
 
