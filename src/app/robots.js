@@ -1,13 +1,17 @@
+// robots.js
 export default function robots() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hentaicop.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://duniahentai.top';
 
   return {
     rules: {
       userAgent: '*',
       allow: '/',
-      // Jangan index halaman API, pencarian (agar tidak spam), dan file internal Next.js
-      disallow: ['/api/', '/search', '/_next/'],
+      disallow: ['/api/', '/search', '/_next/', '/_error', '/admin'],
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: [
+      `${baseUrl}/sitemap.xml`,
+      `${baseUrl}/sitemap.xml.gz`,
+    ],
+    host: baseUrl.replace(/^https?:\/\//, ''),
   };
 }
