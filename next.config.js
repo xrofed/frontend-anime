@@ -85,16 +85,6 @@ const nextConfig = {
         permanent: true,
       },
 
-      // --- PERBAIKAN UTAMA DI SINI ---
-      // Kita pakai Regex: (.*-episode-.*)
-      // Artinya: Hanya redirect jika URL mengandung teks "-episode-"
-      // Ini akan menyelamatkan /logo.png, /episodes, dll dari redirect nyasar.
-      {
-        source: '/:slug(.*-episode-.*)', 
-        destination: '/watch/:slug',
-        permanent: true,
-      },
-
       // --- Legacy SEO URL (Panjang) ---
       {
         source: '/:slug(.*)-episode-:num(\\d+)-subtitle-indonesia',
