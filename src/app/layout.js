@@ -27,6 +27,7 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
+      <meta name="msvalidate.01" content="6E41AC696D5DE948A1156393421936A2" />
       </head>
       <body className="bg-slate-950 text-slate-200 min-h-screen flex flex-col font-sans">
         <AdScript />
