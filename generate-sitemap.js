@@ -53,7 +53,7 @@ async function fetchData(endpoint) {
 }
 
 async function generateSitemap() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://duniahentai.top';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://v2.duniahentai.top';
   
   console.log('\n🚀 Generating sitemap for:', baseUrl);
   console.log('=' .repeat(50));
